@@ -75,6 +75,12 @@ class EffectivenessCalculator:
         Water is double effective to Fire, and half effective to Water and Grass [2, 0.5, 0.5]
         Grass is half effective to Fire and Grass, and double effective to Water [0.5, 2, 0.5]
         """
+        self.table = ArrayR[ArrayR](len(element_names)+1)
+        self.table[0] = element_names
+
+        n = len(element_names)
+        for i in range(0,n*n,n):
+            
         raise NotImplementedError
 
     @classmethod

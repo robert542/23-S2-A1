@@ -25,19 +25,22 @@ class SimpleStats(Stats):
 
     def __init__(self, attack, defense, speed, max_hp) -> None:
         # TODO: Implement
-        pass
+        self._attack = attack
+        self._defense = defense
+        self._speed = speed
+        self._max_hp = max_hp
 
     def get_attack(self):
-        raise NotImplementedError
+        return self._attack
 
     def get_defense(self):
-        raise NotImplementedError
+        return self._defense
 
     def get_speed(self):
-        raise NotImplementedError
+        return self._speed
 
     def get_max_hp(self):
-        raise NotImplementedError
+        return self._max_hp
 
 class ComplexStats(Stats):
 
