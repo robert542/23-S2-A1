@@ -73,6 +73,7 @@ class ArrayR(Generic[T]):
 
         ret_str = ret_str[:-2] + "]"
         return ret_str
+    
 
     @classmethod
     def from_list(cls, l: list[T]) -> ArrayR[T]:

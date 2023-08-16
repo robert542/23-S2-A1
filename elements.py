@@ -79,8 +79,9 @@ class EffectivenessCalculator:
         self.table[0] = element_names
 
         n = len(element_names)
-        for i in range(0,n*n,n):
-            
+        for i in range(n-1,n*n,n):
+            for j in range(i-n,i,1):
+                self.table[j] = effectiveness_values[j]
         raise NotImplementedError
 
     @classmethod
