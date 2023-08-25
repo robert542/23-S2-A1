@@ -13,6 +13,7 @@ class MonsterBase(abc.ABC):
         :level: The starting level of this monster. Defaults to 1.
         """
         self._level = level
+        self.leveled_up = False
         if simple_mode:
             self.stats = self.get_simple_stats
         else:
@@ -28,6 +29,11 @@ class MonsterBase(abc.ABC):
     def level_up(self):
         """Increase the level of this monster instance by 1"""
         self._level += 1
+        self.leveled_up = True
+
+    def set_level(self, new_level):
+        """Allows you to set the level of the monster to a value"""
+        self._level = new_level
 
     def get_hp(self):
         """Get the current HP of this monster instance"""
@@ -69,27 +75,37 @@ class MonsterBase(abc.ABC):
         # Step 2: Apply type effectiveness
         # Step 3: Ceil to int
         # # Step 4: Lose HP
-
-        attack = self.get_attack()
-        defense = other.get_defense
-        #step 1
-        if defense > attack/2:
-            damage = attack - defense
-        elif defense < attack: 
-            damage = attack * 5/8 - defense/4
-        else:
-            damage = attack / 4
+        
+        if self.alive():
+            attack = self.get_attack()
+            defense = other.get_defense
+            #step 1
+            if defense > attack/2:
+                damage = attack - defense
+            elif defense < attack: 
+                damage = attack * 5/8 - defense/4
+            else:
+                damage = attack / 4
         
         #step 2
+
+    def remove_health(self, amount):
+        """Removes the amount of health specified in the amount from the monster its called on"""
+        self.hp -= amount
 
 
     def ready_to_evolve(self) -> bool:
         """Whether this monster is ready to evolve. See assignment spec for specific logic."""
-        raise NotImplementedError
+        if self.get_evolution() != None and self.leveled_up:
+            return True
+        return False
 
     def evolve(self) -> MonsterBase:
         """Evolve this monster instance by returning a new instance of a monster class."""
-        return self.get_evolution()
+        hp_diff = self.get_max_hp - self.get_hp
+        evolution = self.get_evolution()
+        evolution.remove_health(hp_diff)
+        evolution.set_level(self._level)
     
     def __str__(self):
         # "LV.3 Flamikin, 5/6 HP"

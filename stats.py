@@ -21,6 +21,7 @@ class Stats(abc.ABC):
         pass
 
 
+
 class SimpleStats(Stats):
 
     def __init__(self, attack, defense, speed, max_hp) -> None:

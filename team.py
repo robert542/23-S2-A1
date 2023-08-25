@@ -209,6 +209,10 @@ class MonsterTeam:
         if currently_out.get_speed() >= enemy.get_speed() or currently_out.get_hp() >= enemy.get_hp():
             return Battle.Action.ATTACK
         return Battle.Action.SWAP
+    
+    def dead() -> bool:
+        #This should check if all monsters are knocked out and if they are 
+        raise NotImplementedError
 
 if __name__ == "__main__":
     team = MonsterTeam(

@@ -29,7 +29,40 @@ class Battle:
         * remove fainted monsters and retrieve new ones.
         * return the battle result if completed.
         """
-        raise NotImplementedError
+        #see and do specials if chosen
+        t1_action = self.team1.choose_action(self.out1, self.team2)
+        t2_action = self.team2.choose_action(self.out1, self.team2)
+        
+        if t1_action == Battle.Action.SPECIAL:
+            self.team1.special()
+        elif t1_action == Battle.Action.SWAP:
+            self.out1 = self.team1.retrieve_from_team()
+        
+        if t2_action == Battle.Action.SPECIAL:
+            self.team2.special()
+        elif t2_action == Battle.Action.SWAP:
+            self.out2 = self.team2.retrieve_from_team()
+
+        if t1_action == Battle.Action.ATTACK and t2_action == Battle.Action.ATTACK:
+            if self.out1.get_speed() == self.out2.get_speed():
+                self.out1.attack(self.out2)
+                self.out2.attack(self.out1)
+            if self.out1.get_speed() > self.out2.get_speed():
+                self.out1.attack(self.out2)
+                self.out2.attack(self.out1)
+            else:
+                self.out2.attack(self.out1)
+                self.out1.attack(self.out2)
+        
+        if self.team1.dead() and self.team2.dead():
+            return Battle.Result.DRAW
+        if self.team1.dead():
+            return Battle.Result.TEAM2
+        if self.team2.dead():
+            return Battle.Result.TEAM1
+
+
+
 
     def battle(self, team1: MonsterTeam, team2: MonsterTeam) -> Battle.Result:
         if self.verbosity > 0:

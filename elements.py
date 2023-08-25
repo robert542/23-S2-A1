@@ -57,6 +57,8 @@ class EffectivenessCalculator:
     """
 
     instance: Optional[EffectivenessCalculator] = None
+    element_names = None
+    effectiveness_values = None
 
     def __init__(self, element_names: ArrayR[str], effectiveness_values: ArrayR[float]) -> None:
         """
@@ -75,14 +77,12 @@ class EffectivenessCalculator:
         Water is double effective to Fire, and half effective to Water and Grass [2, 0.5, 0.5]
         Grass is half effective to Fire and Grass, and double effective to Water [0.5, 2, 0.5]
         """
-        self.table = ArrayR[ArrayR](len(element_names)+1)
-        self.table[0] = element_names
+        #convert element names into Element type
+        for i in range(len(element_names)):
+            element_names[i] = Element.from_string(element_names[i])
 
-        n = len(element_names)
-        for i in range(n-1,n*n,n):
-            for j in range(i-n,i,1):
-                self.table[j] = effectiveness_values[j]
-        raise NotImplementedError
+        EffectivenessCalculator.element_names = element_names
+        EffectivenessCalculator.effectiveness_values = effectiveness_values
 
     @classmethod
     def get_effectiveness(cls, type1: Element, type2: Element) -> float:
@@ -91,7 +91,15 @@ class EffectivenessCalculator:
 
         Example: EffectivenessCalculator.get_effectiveness(Element.FIRE, Element.WATER) == 0.5
         """
-        raise NotImplementedError
+        #gets the value of n for the flat n*n array stored in effective values
+        n = len(EffectivenessCalculator.element_names)
+        #checks for the "column" of the first element type
+        index_1 = EffectivenessCalculator.element_names.index(type1)
+        #checks for the "row" of the second element type
+        index_2 = EffectivenessCalculator.element_names.index(type2)
+        #grabs the value associated with the "row" and "column"
+        return EffectivenessCalculator.effectiveness_values[(index_1*n) + index_2]
+
 
     @classmethod
     def from_csv(cls, csv_file: str) -> EffectivenessCalculator:
