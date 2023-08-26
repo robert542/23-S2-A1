@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
+from referential_array import ArrayR
 T = TypeVar('T')
 
 __author__ = 'Maria Garcia de la Banda and Brendon Taylor. Modified by Alexey Ignatiev'

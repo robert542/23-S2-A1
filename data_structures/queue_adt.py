@@ -61,6 +61,7 @@ class CircularQueue(Queue[T]):
         Queue.__init__(self)
         self.front = 0
         self.rear = 0
+        self.max_capacity = max_capacity
         self.array = ArrayR(max(self.MIN_CAPACITY,max_capacity))
 
 
@@ -75,6 +76,31 @@ class CircularQueue(Queue[T]):
         self.array[self.rear] = item
         self.length += 1
         self.rear = (self.rear + 1) % len(self.array)
+
+    def prepend(self, item: T) -> None:
+        """Adds and element to the front of the queue
+        lord forgive me
+        :pre: queue is not full, no human decency
+        :raises Exception: if the queue is full
+        """
+        if self.is_full():
+            raise Exception("Queue is full")
+
+        #if queue is empty, normal append
+        if self.front == 0 and self.rear == 0:
+            self.append(item)
+        #if queue has front marker at index 0, move it to the back of the array and put item in front
+        elif self.front == 0:
+            self.front = self.max_capacity-1
+            self.array[self.front] = item
+            self.length += 1
+        #otherwise, move the front marker back an index and place the item and the front index
+        else:
+            self.front -= 1
+            self.array[self.front] = item
+            self.length += 1
+
+
 
     def serve(self) -> T:
         """ Deletes and returns the element at the queue's front.

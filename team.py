@@ -8,6 +8,7 @@ from random_gen import RandomGen
 from helpers import get_all_monsters
 
 from data_structures.referential_array import ArrayR
+from data_structures.queue_adt import CircularQueue
 
 if TYPE_CHECKING:
     from battle import Battle
@@ -28,16 +29,19 @@ class MonsterTeam:
 
     class SortMode(BaseEnum):
 
-        HP = auto()
-        ATTACK = auto()
-        DEFENSE = auto()
-        SPEED = auto()
-        LEVEL = auto()
+        HP = lambda x: x.get_hp()
+        ATTACK = lambda x: x.get_attack()
+        DEFENSE = lambda x: x.get_defense()
+        SPEED = lambda x: x.get_speed()
+        LEVEL = lambda x: x.get_level()
 
     TEAM_LIMIT = 6
 
     def __init__(self, team_mode: TeamMode, selection_mode, **kwargs) -> None:
         # Add any preinit logic here.
+        self.team = CircularQueue(self.TEAM_LIMIT)
+        self.decending = True
+
         self.team_mode = team_mode
         if selection_mode == self.SelectionMode.RANDOM:
             self.select_randomly(**kwargs)
@@ -48,8 +52,20 @@ class MonsterTeam:
         else:
             raise ValueError(f"selection_mode {selection_mode} not supported.")
 
-    def add_to_team(self, monster: MonsterBase):
-        raise NotImplementedError
+    def add_to_team(self, monster: MonsterBase, **kwargs):
+        if self.team_mode == self.TeamMode.FRONT:
+            self.team.prepend(monster)
+        elif self.team_mode == self.TeamMode.BACK:
+            self.team.append(monster)
+        elif self.team_mode == self.TeamMode.OPTIMISE:
+            sorting_key = kwargs.get('SortMode', None)
+            if sorting_key == None:
+                raise ValueError("Sorting stat must be provided for Optimize")
+            if type(sorting_key) != self.SortMode:
+                raise TypeError("sorting key must be of type SortMode")
+
+            
+            
 
     def retrieve_from_team(self) -> MonsterBase:
         raise NotImplementedError
@@ -210,9 +226,6 @@ class MonsterTeam:
             return Battle.Action.ATTACK
         return Battle.Action.SWAP
     
-    def dead() -> bool:
-        #This should check if all monsters are knocked out and if they are 
-        raise NotImplementedError
 
 if __name__ == "__main__":
     team = MonsterTeam(
