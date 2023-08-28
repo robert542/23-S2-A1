@@ -8,7 +8,7 @@ from random_gen import RandomGen
 from helpers import get_all_monsters
 
 from data_structures.referential_array import ArrayR
-from data_structures.queue_adt import CircularQueue
+from data_structures.queue_adt import CircularMonsterQueue
 
 if TYPE_CHECKING:
     from battle import Battle
@@ -27,7 +27,7 @@ class MonsterTeam:
         MANUAL = auto()
         PROVIDED = auto()
 
-    class SortMode(BaseEnum):
+    class SortMode():
 
         HP = lambda x: x.get_hp()
         ATTACK = lambda x: x.get_attack()
@@ -37,9 +37,10 @@ class MonsterTeam:
 
     TEAM_LIMIT = 6
 
+
     def __init__(self, team_mode: TeamMode, selection_mode, **kwargs) -> None:
         # Add any preinit logic here.
-        self.team = CircularQueue(self.TEAM_LIMIT)
+        self.team = CircularMonsterQueue(self.TEAM_LIMIT)
         self.decending = True
 
         self.team_mode = team_mode
@@ -60,21 +61,34 @@ class MonsterTeam:
         elif self.team_mode == self.TeamMode.OPTIMISE:
             sorting_key = kwargs.get('SortMode', None)
             if sorting_key == None:
-                raise ValueError("Sorting stat must be provided for Optimize")
+                raise ValueError("Sorting stat must be provided for Optimize team mode")
             if type(sorting_key) != self.SortMode:
                 raise TypeError("sorting key must be of type SortMode")
-
-            
-            
+            self.team.oppend(monster, self.decending, sorting_key)  
 
     def retrieve_from_team(self) -> MonsterBase:
-        raise NotImplementedError
+        #provides monster at front of queue
+        self.team.serve()
 
-    def special(self) -> None:
-        raise NotImplementedError
+    def special(self,**kwargs) -> None:
+        if self.team_mode == self.TeamMode.FRONT:
+            self.team.front_swap(2)
+        elif self.team_mode == self.TeamMode.BACK:
+            self.team.flip_halves()
+        elif self.team_mode == self.TeamMode.OPTIMISE:
+            sorting_key = kwargs.get('SortMode', None)
+            if sorting_key == None:
+                raise ValueError("Sorting stat must be provided for Optimize team mode")
+            if type(sorting_key) != self.SortMode:
+                raise TypeError("sorting key must be of type SortMode")
+            self.decending = not self.decending
+            self.team.sort(self.decending, sorting_key)
 
     def regenerate_team(self) -> None:
-        raise NotImplementedError
+        for i in range(len(self.team)):
+            monster = self.team.serve()
+            monster.set_hp(monster.get_max_hp())
+        
 
     def select_randomly(self):
         team_size = RandomGen.randint(1, self.TEAM_LIMIT)
@@ -202,8 +216,45 @@ class MonsterTeam:
         This monster cannot be spawned.
         Which monster are you spawning? 1
         """
-        raise NotImplementedError
 
+
+        valid = False
+        while not valid:
+            team_size = input("How big is your team: ")
+            try:
+                team_size = int(team_size)
+                if team_size <= self.TEAM_LIMIT:
+                    valid = True
+                else:
+                    print(f"The team size you choose must not exceed {self.TEAM_LIMIT}!\n")
+            except:
+                print(f"Team size must be given as an integer with a maximum size of {self.TEAM_LIMIT}\n")
+        monsters = get_all_monsters()
+        for _ in range(team_size):
+            valid = False
+            print("MONSTERS are:")
+            for i in range(len(monsters)):
+                monster = monsters[i]
+                if monster.can_be_spawned():
+                    spawn_stat = "✔️"
+                else:
+                    spawn_stat = "❌"
+                print(f"{i+1}: {monster.get_name()} [{spawn_stat}]")
+            
+            while not valid:
+                choice = input("Which monster are you spawning?")
+                try:
+                    choice = int(choice)
+                    if choice > len(monster) or choice < 1:
+                        print("Your number does not corelate to any monster on the list, choose again.")
+                    elif monsters.choice.can_be_spawned() != True:
+                        print("This monster cannot be spawned.")
+                    else:
+                        self.team.append(monsters[choice]())
+                        valid = True
+                except:
+                    print("Your input must be an integer, try again")
+                
     def select_provided(self, provided_monsters:Optional[ArrayR[type[MonsterBase]]]=None):
         """
         Generates a team based on a list of already provided monster classes.
@@ -217,7 +268,17 @@ class MonsterTeam:
         Example team if in TeamMode.FRONT:
         [Gustwing Instance, Aquariuma Instance, Flamikin Instance]
         """
-        raise NotImplementedError
+        if provided_monsters == None:
+            raise ValueError("You need to pass an array of type MonsterBase")
+        for monster in provided_monsters:
+            if self.team.is_full():
+                print("The list you provided had more monsters than the allowed total, not all monsters were added to your team")
+                break
+            if monster.can_be_spawned():
+                self.add_to_team(monster)
+
+    def __len__(self):
+        return self.team.get_length()
 
     def choose_action(self, currently_out: MonsterBase, enemy: MonsterBase) -> Battle.Action:
         # This is just a placeholder function that doesn't matter much for testing.
@@ -225,8 +286,19 @@ class MonsterTeam:
         if currently_out.get_speed() >= enemy.get_speed() or currently_out.get_hp() >= enemy.get_hp():
             return Battle.Action.ATTACK
         return Battle.Action.SWAP
-    
 
+    def death_retrieve(self, active: MonsterBase):
+        if not active.alive():
+            self.team.append(active)
+        for i in range(self.team.get_length()):
+            active = self.retrieve_from_team()
+            if active.alive(): return active
+            self.add_to_team(active)
+        return None
+
+    def get_team(self):
+        return self.team.export()
+    
 if __name__ == "__main__":
     team = MonsterTeam(
         team_mode=MonsterTeam.TeamMode.OPTIMISE,

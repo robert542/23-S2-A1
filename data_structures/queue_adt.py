@@ -77,6 +77,77 @@ class CircularQueue(Queue[T]):
         self.length += 1
         self.rear = (self.rear + 1) % len(self.array)
 
+    def serve(self) -> T:
+        """ Deletes and returns the element at the queue's front.
+        :pre: queue is not empty
+        :raises Exception: if the queue is empty
+        """
+        if self.is_empty():
+            raise Exception("Queue is empty")
+
+        self.length -= 1
+        item = self.array[self.front]
+        self.front = (self.front+1) % len(self.array)
+        return item
+
+    def peek(self) -> T:
+        """ Returns the element at the queue's front.
+        :pre: queue is not empty
+        :raises Exception: if the queue is empty
+        """
+        if self.is_empty():
+            raise Exception("Queue is empty")
+
+        item = self.array[self.front]
+        return item
+
+    def is_full(self) -> bool:
+        """ True if the queue is full and no element can be appended. """
+        return len(self) == len(self.array)
+
+    def clear(self) -> None:
+        """ Clears all elements from the queue. """
+        Queue.__init__(self)
+        self.front = 0
+        self.rear = 0
+
+    def get_length(self):
+        return self.length
+
+
+class CircularMonsterQueue(Queue[T]):
+    """ Circular implementation of a queue with arrays.
+
+    Attributes:
+         length (int): number of elements in the stack (inherited)
+         front (int): index of the element at the front of the queue
+         rear (int): index of the first empty space at the back of the queue
+         array (ArrayR[T]): array storing the elements of the queue
+
+    ArrayR cannot create empty arrays. So MIN_CAPACITY used to avoid this.
+    """
+    MIN_CAPACITY = 1
+
+    def __init__(self,max_capacity:int) -> None:
+        Queue.__init__(self)
+        self.front = 0
+        self.rear = 0
+        self.max_capacity = max_capacity
+        self.array = ArrayR(max(self.MIN_CAPACITY,max_capacity))
+
+
+    def append(self, item: T) -> None:
+        """ Adds an element to the rear of the queue.
+        :pre: queue is not full
+        :raises Exception: if the queue is full
+        """
+        if self.is_full():
+            raise Exception("Queue is full")
+
+        self.array[self.rear] = item
+        self.length += 1
+        self.rear = (self.rear + 1) % len(self.array)
+
     def prepend(self, item: T) -> None:
         """Adds and element to the front of the queue
         lord forgive me
@@ -100,7 +171,78 @@ class CircularQueue(Queue[T]):
             self.array[self.front] = item
             self.length += 1
 
+    def sort(self, decending:bool, sort_func):
+        #extract the values from self.array into a length sized array for sorting
+        values = ArrayR(self.length)
+        for i in range(self.front, self.front + self.length):
+            values[values.element_count()-1] = self.array[i%len(self.array)]
+        
+        #bubble sort values
+        n = len(values)
+        for mark in range(n-1,0,-1):
+            swapped = False
+            for i in range(mark):
+                if decending:
+                    if sort_func(values[i]) < sort_func(values[i+1]):
+                        temp = values[i+1]
+                        values[i+1] = values[i]
+                        values[i] = temp
+                        swapped = True
+                if not decending: 
+                    if sort_func(values[i]) > sort_func(values[i+1]):
+                        temp = values[i+1]
+                        values[i+1] = values[i]
+                        values[i] = temp
+                        swapped = True
+                if not swapped:
+                    break
+        #put back into self.arry
+        for i in range(len(values)):
+            self.array[(i+self.front)%len(self.array)] = values[i]
 
+    def export(self):
+        values = ArrayR(self.length)
+        for i in range(self.front, self.front + self.length):
+            values[values.element_count()-1] = self.array[i%len(self.array)]
+        return values
+    
+    def oppend(self, item:T, decending:bool, sort_func):
+        '''Adds a value to the queue then sorts the queue in decending or accending order.
+        sorts according to value provided by sort_function, which should be a lambda function
+        
+        '''
+        
+        self.prependend(item)
+        self.sort(decending, sort_func)
+
+    def front_swap(self, dist):
+        #dist is the difference between the front and the value being swapped
+        temp = self.array[self.front]
+        self.array[self.front] = self.array[(self.front+dist)%len(self.array)]
+        self.array[(self.front+dist)%len(self.array)] = temp
+
+    def flip_halves(self):
+        #take out of queue form
+        values = ArrayR(self.length)
+        for i in range(self.front, self.front + self.length):
+            values[values.element_count()-1] = self.array[i%len(self.array)]
+        flipped = ArrayR(self.length)
+        front_len = len(values)//2
+        front_part = CircularMonsterQueue(front_len)
+        back_part = CircularMonsterQueue(self.length-front_len)
+        for i in range(len(values)):
+            if i <= front_len-1:
+                front_part.append(values[i])
+            else:
+                back_part.prepend(values[i])
+            for i in range(back_part.get_length()):
+                flipped.append(back_part.serve())
+            for i in range(front_part.get_length()):
+                flipped.append(front_part.serve())
+                
+        #put back into self.arry
+        for i in range(len(flipped)):
+            self.array[(i+self.front)%len(self.array)] = flipped[i]
 
     def serve(self) -> T:
         """ Deletes and returns the element at the queue's front.
@@ -136,6 +278,9 @@ class CircularQueue(Queue[T]):
         self.front = 0
         self.rear = 0
 
+    def get_length(self):
+        return self.length
+
 
 class TestQueue(unittest.TestCase):
     """ Tests for the above class."""
@@ -146,7 +291,7 @@ class TestQueue(unittest.TestCase):
 
     def setUp(self):
         self.lengths = [self.EMPTY, self.ROOMY, self.LARGE, self.ROOMY, self.LARGE]
-        self.queues = [CircularQueue(self.CAPACITY) for i in range(len(self.lengths))]
+        self.queues = [CircularMonsterQueue(self.CAPACITY) for i in range(len(self.lengths))]
         for queue, length in zip(self.queues, self.lengths):
             for i in range(length):
                 queue.append(i)

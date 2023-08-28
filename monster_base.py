@@ -2,6 +2,7 @@ from __future__ import annotations
 import abc
 
 from stats import Stats
+from elements import EffectivenessCalculator
 
 class MonsterBase(abc.ABC):
 
@@ -41,6 +42,8 @@ class MonsterBase(abc.ABC):
 
     def set_hp(self, val):
         """Set the current HP of this monster instance"""
+        if type(val) != int:
+            raise TypeError("val must be an integer")
         if val > self.get_max_hp():
             self.hp = self.get_max_hp()
         elif val < 0:
@@ -78,9 +81,9 @@ class MonsterBase(abc.ABC):
         
         if self.alive():
             attack = self.get_attack()
-            defense = other.get_defense
+            defense = other.get_defense()
             #step 1
-            if defense > attack/2:
+            if defense < attack/2:
                 damage = attack - defense
             elif defense < attack: 
                 damage = attack * 5/8 - defense/4
@@ -88,6 +91,13 @@ class MonsterBase(abc.ABC):
                 damage = attack / 4
         
         #step 2
+        elemental_multiplier = EffectivenessCalculator.get_effectiveness(self.get_element, other.get_element)
+        effective_damage = damage*elemental_multiplier
+
+        final_damage = int(effective_damage)+1
+
+        other.remove_health(final_damage)
+
 
     def remove_health(self, amount):
         """Removes the amount of health specified in the amount from the monster its called on"""
@@ -96,7 +106,7 @@ class MonsterBase(abc.ABC):
 
     def ready_to_evolve(self) -> bool:
         """Whether this monster is ready to evolve. See assignment spec for specific logic."""
-        if self.get_evolution() != None and self.leveled_up:
+        if self.get_evolution() != None and self.leveled_up and self.alive:
             return True
         return False
 

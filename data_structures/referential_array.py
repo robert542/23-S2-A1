@@ -64,6 +64,13 @@ class ArrayR(Generic[T]):
                 return index
         else:
             raise ValueError("Value does not exist")
+        
+    def element_count(self):
+        count = 0
+        for element in self.array:
+            if element != None:
+                count +=1
+        return count
 
     def __str__(self) -> str:
         ret_str = "["

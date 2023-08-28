@@ -69,3 +69,50 @@ class List(ABC, Generic[T]):
     def clear(self):
         """ Clear the list. """
         self.length = 0
+
+class MonsterList(List):
+    
+    def __init__(self) -> None:
+        super().__init__(self)
+        self.array = ArrayR[0]
+    
+    def __getitem__(self, index: int) -> T:
+        return self.array[index]
+    
+    def __setitem__(self, index: int, item: T) -> None:
+        self.array[index] = item
+
+    def insert(self, index: int, item: T) -> None:
+        if index > len(self.array) or index < 0:
+            raise ValueError("To insert a value into a list you must provide an index in the range of the list")
+        
+        new_array = ArrayR[len(self.array)+1]
+        for i in range(index):
+            new_array[i] = self.array[i]
+        new_array[index] = item
+        for i in range(index+1, len(self.array)+1):
+            new_array[i] = self.array[i]
+        self.array = new_array
+
+    def delete_at_index(self, index: int) -> T:
+        if index > len(self.array) or index < 0:
+            raise ValueError("To delete a value in the list you must provide an index in the range of the list")
+        
+        new_array = ArrayR(len(self.array)-1)
+        for i in range(index):
+            new_array[i] = self.array[i]
+        for i in range(index,len(self.array)-1):
+            new_array[i] = self.array[i+1]
+        self.array = new_array
+
+    def index(self, item: T, strict: bool=False) -> int:
+        #will return the index of item if found in list, if not found, None will be returned unless strcit is set to True
+        for i in range(len(self.array)):
+            if self.array[i] == item:
+                return i
+        if strict:
+            raise LookupError("This item does not exist in this list")
+        return None
+    
+    def get_array(self):
+        return self.array
