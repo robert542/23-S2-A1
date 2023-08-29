@@ -40,14 +40,14 @@ class MonsterTeam:
 
 
     def __init__(self, team_mode: TeamMode, selection_mode, **kwargs) -> None:
-        # Add any preinit logic here.
+        #initialize team
         self.team = MonsterList()
         self.descending = True
 
         self.name = kwargs.get('team_name', None)
-
+        #value to sort by if optimize is being used
         self.sort_key = kwargs.get('sort_key', None)
-
+        #loads team with monsters
         self.team_mode = team_mode
         if selection_mode == self.SelectionMode.RANDOM:
             self.select_randomly()
@@ -60,15 +60,36 @@ class MonsterTeam:
             raise ValueError(f"selection_mode {selection_mode} not supported.")
 
     def add_to_team(self, monster: MonsterBase):
+        """
+        Adds a monster to the team based on the team_mode.
+        
+        Parameters:
+        - monster (MonsterBase): The monster object to add to the team.
+
+        Modes:
+        - FRONT: Adds the monster to the front of the team list.
+        - BACK: Adds the monster to the end of the team list.
+        - OPTIMISE: Adds the monster to the team and sorts the team based on some criteria.
+        
+        Front complexity: O(n)
+        Back complexity: O(n)
+        OPTIMIZE complexity: O(n^2)
+        """
         if self.team_mode == self.TeamMode.FRONT:
             self.team.insert(0, monster)
         elif self.team_mode == self.TeamMode.BACK:
             self.team.append(monster)
         elif self.team_mode == self.TeamMode.OPTIMISE:
             self.team.insert(0,monster)
-            self.team.sort(self.descending, self.sorting_key) 
+            self.team.sort(self.descending, self.sort_key) 
 
     def retrieve_from_team(self) -> MonsterBase:
+        """
+        retrieves the first living monster on team and returns it. If no monster living, Returns None.
+
+        complexity: O(n)
+        
+        """
         for i in range(len(self.team)):
             monster = self.team[i]
             if monster.alive():
@@ -78,31 +99,50 @@ class MonsterTeam:
 
 
     def special(self,**kwargs) -> None:
+        """
+        executes special move for each mode
+
+        Front complexity: O(1)
+        Back complexity: O(n)
+        Optimize complexity: O(n^2)
+        
+        """
         if self.team_mode == self.TeamMode.FRONT:
             self.team.front_swap(2)
         elif self.team_mode == self.TeamMode.BACK:
             self.team.flip_halves()
         elif self.team_mode == self.TeamMode.OPTIMISE:
 
-            if self.sorting_key == None:
-                raise ValueError("Sorting stat must be provided for Optimize team mode")
-            if type(self.sorting_key) != self.SortMode:
-                raise TypeError("sorting key must be of type SortMode")
+            if self.sort_key == None:
+                raise ValueError("Sort stat must be provided for Optimize team mode")
+            if type(self.sort_key) != self.SortMode:
+                raise TypeError("sort key must be of type SortMode")
             self.descending = not self.descending
-            self.team.sort(self.descending, self.sorting_key)
+            self.team.sort(self.descending, self.sort_key)
 
     def regenerate_team(self) -> None:
+        """
+        Brings team back up to full health
+
+        Complexity: O(n)
+        
+        """
         for i in range(len(self.team)):
             self.team[i].set_hp(self.team[i].get_max_hp())
         
     def select_randomly(self):
+        """
+        sets team with a random number and type of monsters
+
+        Complexity: O(n)
+        
+        """
         team_size = RandomGen.randint(1, self.TEAM_LIMIT)
         monsters = get_all_monsters()
         n_spawnable = 0
         for x in range(len(monsters)):
             if monsters[x].can_be_spawned():
                 n_spawnable += 1
-
         for _ in range(team_size):
             spawner_index = RandomGen.randint(0, n_spawnable-1)
             cur_index = -1
@@ -283,7 +323,7 @@ class MonsterTeam:
                 self.add_to_team(monster)
 
     def __len__(self):
-        return self.team.get_length()
+        return len(self.team)
 
     def choose_action(self, currently_out: MonsterBase, enemy: MonsterBase) -> Battle.Action:
         # This is just a placeholder function that doesn't matter much for testing.
@@ -296,6 +336,8 @@ class MonsterTeam:
         return self.team
     
     def __str__(self):
+        if self.name == None:
+            return str(self.team)
         return f"{self.name}({len(self.get_team())})"
     
 if __name__ == "__main__":

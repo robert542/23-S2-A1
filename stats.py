@@ -29,13 +29,25 @@ class Stats(abc.ABC):
 class SimpleStats(Stats):
 
     def __init__(self, attack, defense, speed, max_hp) -> None:
-        # TODO: Implement
+        """Initializes an instance of the SimpleStats class.
+
+        :param attack: Attack stat.
+        :param defense: Defense stat.
+        :param speed: Speed stat.
+        :param max_hp: Max HP stat.
+        :complexity: O(1)
+        """
         self._attack = attack
         self._defense = defense
         self._speed = speed
         self._max_hp = max_hp
 
     def get_attack(self):
+        """Returns the attack stat.
+
+        :returns: The attack stat.
+        :complexity: O(1)
+        """
         return self._attack
 
     def get_defense(self):
@@ -50,6 +62,7 @@ class SimpleStats(Stats):
 class ComplexStats(Stats):
 
     def __init__(
+
         self,
         attack_formula: ArrayR[str],
         defense_formula: ArrayR[str],
@@ -57,6 +70,16 @@ class ComplexStats(Stats):
         max_hp_formula: ArrayR[str],
     ) -> None:
 
+        """Initializes an instance of the ComplexStats class with given formulas for each stat.
+
+        :param attack_formula: Formula for calculating attack stat.
+        :param defense_formula: Formula for calculating defense stat.
+        :param speed_formula: Formula for calculating speed stat.
+        :param max_hp_formula: Formula for calculating max_hp stat.
+        :complexity: O(1)
+
+        all get methods run in O(n)
+        """
         self.attack_formula = attack_formula
         self.defense_formula = defense_formula
         self.speed_formula = speed_formula
@@ -64,6 +87,12 @@ class ComplexStats(Stats):
 
            
     def get_attack(self, level: int):
+        """Calculates and returns the attack stat.
+
+        :param level: The level for which the attack stat is calculated.
+        :returns: The calculated attack stat.
+        :complexity: O(n), where n is the length of the attack formula array.
+        """
         formula = self.attack_formula
         stack = ArrayStack(len(formula))
         for i in range(len(formula)-1,-1,-1):
@@ -112,6 +141,14 @@ class ComplexStats(Stats):
         return value
 
     def calculator(self, stack:ArrayStack, level:int, a, b):
+        """Helper method to calculate stat value using given formula.
+
+        :param stack: Stack containing the elements of the formula.
+        :param level: The level for which the stat is calculated.
+        :param a, b: Intermediate variables for calculation.
+        :returns: The calculated stat value.
+        :complexity: O(n), where n is the length of the formula array.
+        """
         if type(a) == str:
             # a will never be the terminating element in the formula as level represents a number, not an operation
             a = level
@@ -134,6 +171,13 @@ class ComplexStats(Stats):
         return value
 
     def operations(self, opr:str, a, b):
+        """Applies the operation to the operands.
+
+        :param opr: The operation to be applied.
+        :param a, b: Operands for the operation.
+        :returns: The result of the operation.
+        :complexity: O(1)
+    """
         if opr == "+":
             return a+b
         if opr == "/":

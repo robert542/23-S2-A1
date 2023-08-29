@@ -47,13 +47,16 @@ class BattleTower:
         enemy_lives = CircularMonsterQueue(n)
 
         for i in range(n):
-            new_team = MonsterTeam(MonsterTeam.TeamMode.BACK, MonsterTeam.SelectionMode.RANDOM, team_name = i)
+            new_team = MonsterTeam(MonsterTeam.TeamMode.BACK, MonsterTeam.SelectionMode.RANDOM)
             enemy_lives.append(RandomGen.randint(self.MIN_LIVES, self.MAX_LIVES))
             enemy_list.append(new_team)
         self.tower_teams = enemy_list
         self.tower_lives = enemy_lives
         
     def battles_remaining(self) -> bool:
+        """returns true if battles are remaining because no one is dead yet.
+            runs in O(n^2)
+        """
         if self.player_lives == 0:
             return False
         for i in range(self.tower_lives.get_length()):
@@ -62,7 +65,28 @@ class BattleTower:
         return False
 
     def next_battle(self) -> tuple[Battle.Result, MonsterTeam, MonsterTeam, int, int]:
-        print("NEXT BATTLE")
+        """
+        Simulates the next battle between the player's team and an enemy team.
+        
+        The method performs the following steps:
+        - Retrieves the next enemy team and their remaining lives from the tower.
+        - Gathers the elements involved in the upcoming battle.
+        - Regenerates both teams to prepare for the battle.
+        - Simulates the battle.
+        - Updates the seen elements.
+        - Updates the remaining lives for both teams based on the battle outcome.
+        
+        Returns:
+            tuple: A tuple containing the following elements:
+                - Battle result (Battle.Result enum)
+                - Updated player's team (MonsterTeam)
+                - Updated enemy's team (MonsterTeam)
+                - Remaining player lives (int)
+                - Remaining enemy lives (int)
+
+        main complexity inherited from Battle.battle,
+        so ill call it O(b)
+        """
 
         #lives and team served from team tower
         enemy_team = self.tower_teams.serve()
@@ -70,11 +94,11 @@ class BattleTower:
 
         #elements in upcoming battler are collected
         battle_set = BSet()
-        monsters = enemy_team.get_team()
+        monsters = enemy_team.team
         for i in range(len(monsters)):
             battle_set.add(Element.from_string(monsters[i].get_element()).value)
-        for i in range(len(self.player_team.get_team())):
-            battle_set.add(Element.from_string(self.player_team.get_team()[i].get_element()).value)
+        for i in range(len(self.player_team.team)):
+            battle_set.add(Element.from_string(self.player_team.team[i].get_element()).value)
         #both teams are regenerated
         self.player_team.regenerate_team()
         enemy_team.regenerate_team()
@@ -107,19 +131,23 @@ class BattleTower:
         return results   
 
     def out_of_meta(self) -> ArrayR[Element]:
-        next_battle_set = BSet()
-        index = (self.battle_count-len(self.dead_teams))%len(self.tower_teams) 
-        monsters = self.tower_teams[index].get_team()
-        for i in range(len(monsters)):
-            next_battle_set.add(Element.from_string(monsters[i].get_element()).value)
-        for i in range(len(self.player_team.get_team())):
-            next_battle_set.add(Element.from_string(self.player_team.get_team()[i].get_element()).value)
-        dif =  self.seen_elements.difference(next_battle_set)
-        valid = MonsterList()
-        for element in Element:
-            if element.value in dif:
-                valid.append(element)
-        return valid.get_array()
+            next_battle_set = BSet()
+            next_enemy = self.tower_teams.peek()
+            for i in range(len(self.player_team.team)):
+                next_battle_set.add(Element.from_string(self.player_team.team[i].get_element()).value)
+            for i in range(len(next_enemy.team)):
+                next_battle_set.add(Element.from_string(next_enemy.team[i].get_element()).value)
+            values = self.seen_elements.difference(next_battle_set)
+
+            final = MonsterList()
+            for element in Element:
+                if element.value in values:
+                    final.append(element)
+            final_final = ArrayR(len(final))
+            for i in range(len(final)):
+                final_final[i] = final[i]
+            return final_final
+
 
     def sort_by_lives(self):
         # 1054 ONLY
@@ -134,7 +162,7 @@ if __name__ == "__main__":
     RandomGen.set_seed(129371)
 
     bt = BattleTower(Battle(verbosity=3))
-    bt.set_my_team(MonsterTeam(MonsterTeam.TeamMode.BACK, MonsterTeam.SelectionMode.RANDOM, team_name = "Robert"))
+    bt.set_my_team(MonsterTeam(MonsterTeam.TeamMode.BACK, MonsterTeam.SelectionMode.RANDOM))
     bt.generate_teams(3)
     
 

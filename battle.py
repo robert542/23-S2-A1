@@ -29,6 +29,8 @@ class Battle:
         * level and evolve monsters
         * remove fainted monsters and retrieve new ones.
         * return the battle result if completed.
+
+        
         """
         #Get action from each team
         t1_action = self.team1.choose_action(self.out1, self.out2)
@@ -70,14 +72,14 @@ class Battle:
         #evolves pokemon if alive
         if self.out1.ready_to_evolve():
             self.out1=self.out1.evolve()
-        if self.out1.ready_to_evolve():
-            self.out1=self.out1.evolve()
+        if self.out2.ready_to_evolve():
+            self.out2=self.out2.evolve()
         #if either are dead, returns next alive monster from team queue
         #returns None if no monsters in team queue are alive
-        if not self.out1.alive:
+        if not self.out1.alive():
             self.team1.add_to_team(self.out1)
             self.out1 = self.team1.retrieve_from_team()
-        if not self.out2.alive:
+        if not self.out2.alive():
             self.team2.add_to_team(self.out2)
             self.out2 = self.team2.retrieve_from_team()
 
@@ -92,18 +94,27 @@ class Battle:
 
 
     def battle(self, team1: MonsterTeam, team2: MonsterTeam) -> Battle.Result:
+        """
+        runs through entire battle between two teams and returns the results
+        
+        worst complexity is O(t*n^2) where t is the number of turns and n is team length. Turns is really affected by number on the smaller team
+        """
         if self.verbosity > 0:
             print(f"Team 1: {team1} vs. Team 2: {team2}")
-        # Add any pregame logic here.
         self.turn_number = 0
         self.team1 = team1
         self.team2 = team2
         self.out1 = self.team1.retrieve_from_team()
         self.out2 = self.team2.retrieve_from_team()
         result = None
-        while result is None:
+        #main game loop
+        while result == None:
             result = self.process_turn()
-        # Add any postgame logic here.
+        #put monsters back on team at end of battle
+        if self.out1 != None:
+            self.team1.add_to_team(self.out1)
+        if self.out2 != None:
+            self.team2.add_to_team(self.out2)
         return result
 
 if __name__ == "__main__":

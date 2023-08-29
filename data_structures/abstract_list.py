@@ -41,7 +41,7 @@ class List(ABC, Generic[T]):
     def append(self, item: T) -> None:
         """ Append a new item to the end of the list. """
         self.insert(len(self), item)
-        self.length +=1
+
 
     @abstractmethod
     def insert(self, index: int, item: T) -> None:
@@ -74,6 +74,9 @@ class List(ABC, Generic[T]):
 class MonsterList(List):
     
     def __init__(self) -> None:
+        """Initializes an empty ArrayR and sets the length to 0.
+        :complexity: O(1)
+        """
         self.length = 0
         self.array = ArrayR(0)
     
@@ -84,23 +87,35 @@ class MonsterList(List):
         self.array[index] = item
 
     def insert(self, index: int, item: T) -> None:
+        """Inserts an item at a given index.
+        :complexity: O(n) where n is the size of the list
+        """
         if index > len(self.array) or index < 0:
-            raise ValueError("To insert a value into a list you must provide an index in the range of the list")
+            raise IndexError("To insert a value into a list you must provide an index in the range of the list")
         
         new_array = ArrayR(len(self.array)+1)
+        
         for i in range(index):
             new_array[i] = self.array[i]
         new_array[index] = item
-        for i in range(index+1, len(self.array)+1):
-            new_array[i] = self.array[i]
+        
+        for i in range(index, len(self.array)):
+            new_array[i+1] = self.array[i]
+
+            
         self.array = new_array
-        self.length +=1
+        self.length += 1
+
 
     def delete_at_index(self, index: int) -> T:
-        if index > len(self.array) or index < 0:
+        """Deletes an item at a given index.
+        :complexity: O(n) where n is the size of the list
+        """
+        if index >= self.length or index < 0:
             raise ValueError("To delete a value in the list you must provide an index in the range of the list")
-        
+        #make shorter array
         new_array = ArrayR(len(self.array)-1)
+        #up until index, add stuff back on
         for i in range(index):
             new_array[i] = self.array[i]
         for i in range(index,len(self.array)-1):
@@ -109,7 +124,10 @@ class MonsterList(List):
         self.length-=1
 
     def index(self, item: T, strict: bool=False) -> int:
-        #will return the index of item if found in list, if not found, None will be returned unless strcit is set to True
+        """Returns the index of a given item.
+        :complexity: O(n) where n is the size of the list
+        """
+
         for i in range(len(self.array)):
             if self.array[i] == item:
                 return i
@@ -118,15 +136,26 @@ class MonsterList(List):
         return None
     
     def __add__(self, other_list):
+        """Adds another MonsterList to self.
+        :complexity: O(n+m) where n is the size of self and m is the size of other_list
+        """
         if type(other_list) != type(self):
             raise TypeError("You can only add a list to a list")
-        self_copy = self.array
-        for i in other_list:
+        
+        self_copy = MonsterList()
+        for i in range(len(self)):  
+            self_copy.append(self[i])
+        
+        for i in range(len(other_list)):  
             self_copy.append(other_list[i])
+            
         return self_copy
 
+
     def sort(self, descending:bool, sort_func):
-        #sorts in either ascending or decending order. should really only be used when adding in optimized mode to utilize incremental nature
+        """Sorts the list using bubble sort.
+        :complexity: O(n^2) where n is the size of the list
+        """
         values = self.array
 
         # Bubble sort values
@@ -150,13 +179,17 @@ class MonsterList(List):
                 break
 
     def front_swap(self, dist):
-        #dist is the difference between the front and the value being swapped
+        """Swaps the front item with another item at a given distance.
+        :complexity: O(1)
+        """
         temp = self.array[self.front]
         self.array[self.front] = self.array[(self.front+dist)%len(self.array)]
         self.array[(self.front+dist)%len(self.array)] = temp
 
     def flip_halves(self):
-        #take out of queue form
+        """Flips the two halves of the list.
+        :complexity: O(n) where n is the size of the list
+        """
         values = self.array
         
         front_len = len(values)//2
@@ -171,4 +204,79 @@ class MonsterList(List):
 
                     
     def get_array(self):
+        """Returns the internal ArrayR.
+        :complexity: O(1)
+        """
         return self.array
+    
+
+import unittest
+
+class TestMonsterList(unittest.TestCase):
+
+    def test_init(self):
+        ml = MonsterList()
+        self.assertEqual(len(ml), 0)
+
+    def test_append(self):
+        ml = MonsterList()
+        ml.append(1)
+        self.assertEqual(len(ml), 1)
+        self.assertEqual(ml[0], 1)
+
+    def test_insert(self):
+        ml = MonsterList()
+        ml.insert(0, 1)
+        self.assertEqual(len(ml), 1)
+        self.assertEqual(ml[0], 1)
+
+        with self.assertRaises(IndexError):
+            ml.insert(2, 2)
+
+    def test_delete_at_index(self):
+        ml = MonsterList()
+        ml.append(1)
+        ml.append(2)
+        ml.append(3)
+
+        ml.delete_at_index(1)
+        self.assertEqual(len(ml), 2)
+        self.assertEqual(ml[0], 1)
+        self.assertEqual(ml[1], 3)
+
+        with self.assertRaises(ValueError):
+            ml.delete_at_index(2)
+
+    def test_index(self):
+        ml = MonsterList()
+        ml.append(1)
+        ml.append(2)
+        ml.append(3)
+
+        self.assertEqual(ml.index(2), 1)
+
+    def test_add(self):
+        ml1 = MonsterList()
+        ml1.append(1)
+        ml1.append(2)
+        ml2 = MonsterList()
+        ml2.append(3)
+        ml2.append(4)
+
+        ml3 = ml1 + ml2
+        self.assertEqual(len(ml3), 4)
+        self.assertEqual(ml3[2], 3)
+
+    def test_sort(self):
+        ml = MonsterList()
+        ml.append(3)
+        ml.append(1)
+        ml.append(2)
+        ml.sort(descending=False, sort_func=lambda x: x)
+        self.assertEqual(ml[0], 1)
+        self.assertEqual(ml[2], 3)
+
+
+
+if __name__ == "__main__":
+    unittest.main()

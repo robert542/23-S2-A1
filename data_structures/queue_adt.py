@@ -140,6 +140,7 @@ class CircularMonsterQueue(Queue[T]):
         """ Adds an element to the rear of the queue.
         :pre: queue is not full
         :raises Exception: if the queue is full
+        :complexity: O(1)
         """
         if self.is_full():
             raise Exception("Queue is full")
@@ -148,108 +149,20 @@ class CircularMonsterQueue(Queue[T]):
         self.length += 1
         self.rear = (self.rear + 1) % len(self.array)
 
-
-    def prepend(self, item: T) -> None:
-        """Adds and element to the front of the queue
-        lord forgive me
-        :pre: queue is not full, no human decency
-        :raises Exception: if the queue is full
-        """
-        if self.is_full():
-            raise Exception("Queue is full")
-
-        #if queue is empty, normal append
-        if self.front == 0 and self.rear == 0:
-            self.append(item)
-        #if queue has front marker at index 0, move it to the back of the array and put item in front
-        elif self.front == 0:
-            self.front = self.max_capacity-1
-            self.array[self.front] = item
-            self.length += 1
-        #otherwise, move the front marker back an index and place the item and the front index
-        else:
-            self.front -= 1
-            self.array[self.front] = item
-            self.length += 1
-
-    def sort(self, descending:bool, sort_func):
-        # Extract the values from self.array into a length-sized array for sorting
-        values = ArrayR(self.length)
-        for i in range(self.front, self.front + self.length):
-            values[values.element_count()-1] = self.array[i % len(self.array)]
-
-        # Bubble sort values
-        n = len(values)
-        for mark in range(n-1, 0, -1):
-            swapped = False
-            for i in range(mark):
-                if descending:
-                    if sort_func(values[i]) < sort_func(values[i + 1]):
-                        temp = values[i + 1]
-                        values[i + 1] = values[i]
-                        values[i] = temp
-                        swapped = True
-                else:
-                    if sort_func(values[i]) > sort_func(values[i + 1]):
-                        temp = values[i + 1]
-                        values[i + 1] = values[i]
-                        values[i] = temp
-                        swapped = True
-            if not swapped:
-                break
-
-        # Put back into self.array
-        for i in range(len(values)):
-            self.array[(i + self.front) % len(self.array)] = values[i]
-
     def export(self):
+        """ Exports the queue as a new array.
+        :complexity: O(n) where n is the length of the queue
+        """
         values = ArrayR(self.length)
         for i in range(self.front, self.front + self.length):
             values[values.element_count()-1] = self.array[i%len(self.array)]
         return values
-    
-    def oppend(self, item:T, decending:bool, sort_func):
-        '''Adds a value to the queue then sorts the queue in decending or accending order.
-        sorts according to value provided by sort_function, which should be a lambda function
-        
-        '''
-        
-        self.prepend(item)
-        self.sort(decending, sort_func)
-
-    def front_swap(self, dist):
-        #dist is the difference between the front and the value being swapped
-        temp = self.array[self.front]
-        self.array[self.front] = self.array[(self.front+dist)%len(self.array)]
-        self.array[(self.front+dist)%len(self.array)] = temp
-
-    def flip_halves(self):
-        #take out of queue form
-        values = ArrayR(self.length)
-        for i in range(self.front, self.front + self.length):
-            values[values.element_count()-1] = self.array[i%len(self.array)]
-        flipped = ArrayR(self.length)
-        front_len = len(values)//2
-        front_part = CircularMonsterQueue(front_len)
-        back_part = CircularMonsterQueue(self.length-front_len)
-        for i in range(len(values)):
-            if i <= front_len-1:
-                front_part.append(values[i])
-            else:
-                back_part.prepend(values[i])
-            for i in range(back_part.get_length()):
-                flipped.append(back_part.serve())
-            for i in range(front_part.get_length()):
-                flipped.append(front_part.serve())
-                
-        #put back into self.arry
-        for i in range(len(flipped)):
-            self.array[(i+self.front)%len(self.array)] = flipped[i]
 
     def serve(self) -> T:
         """ Deletes and returns the element at the queue's front.
         :pre: queue is not empty
         :raises Exception: if the queue is empty
+        :complexity: O(1)
         """
         if self.is_empty():
             raise Exception("Queue is empty")
@@ -263,6 +176,7 @@ class CircularMonsterQueue(Queue[T]):
         """ Returns the element at the queue's front.
         :pre: queue is not empty
         :raises Exception: if the queue is empty
+        :complexity: O(1)
         """
         if self.is_empty():
             raise Exception("Queue is empty")
@@ -271,16 +185,23 @@ class CircularMonsterQueue(Queue[T]):
         return item
 
     def is_full(self) -> bool:
-        """ True if the queue is full and no element can be appended. """
+        """ True if the queue is full and no element can be appended.
+        :complexity: O(1)
+        """
         return len(self) == len(self.array)
 
     def clear(self) -> None:
-        """ Clears all elements from the queue. """
+        """ Clears all elements from the queue.
+        :complexity: O(1)
+        """
         Queue.__init__(self)
         self.front = 0
         self.rear = 0
 
     def get_length(self):
+        """ Returns the current length of the queue.
+        :complexity: O(1)
+        """
         return self.length
 
 

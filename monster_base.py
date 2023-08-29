@@ -12,6 +12,9 @@ class MonsterBase(abc.ABC):
 
         :simple_mode: Whether to use the simple or complex stats of this monster
         :level: The starting level of this monster. Defaults to 1.
+
+
+        retrieval from stats will run in O(n) if simple_mode = False as the get methods derive from complex stats rather than simple
         """
         self._level = level
         self.leveled_up = False
@@ -24,16 +27,23 @@ class MonsterBase(abc.ABC):
 
 
     def get_level(self):
-        """The current level of this monster instance"""
+        """Returns the current level of this monster instance.
+        :complexity: O(1)
+        """
+
         return self._level
 
     def level_up(self):
-        """Increase the level of this monster instance by 1"""
+        """Increase the level of this monster instance by 1.
+        :complexity: O(1)
+        """
         self._level += 1
         self.leveled_up = True
 
     def set_level(self, new_level):
-        """Allows you to set the level of the monster to a value"""
+        """Allows you to set the level of the monster to a value.
+        :complexity: O(1)
+        """
         self._level = new_level
 
     def get_hp(self):
@@ -117,6 +127,7 @@ class MonsterBase(abc.ABC):
         evolution = self.get_evolution()
         evolution.remove_health(hp_diff)
         evolution.set_level(self._level)
+        return evolution
     
     def __str__(self):
         # "LV.3 Flamikin, 5/6 HP"
