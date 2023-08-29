@@ -9,6 +9,7 @@ from helpers import get_all_monsters
 
 from data_structures.referential_array import ArrayR
 from data_structures.queue_adt import CircularMonsterQueue
+from data_structures.abstract_list import MonsterList
 
 if TYPE_CHECKING:
     from battle import Battle
@@ -40,8 +41,10 @@ class MonsterTeam:
 
     def __init__(self, team_mode: TeamMode, selection_mode, **kwargs) -> None:
         # Add any preinit logic here.
-        self.team = CircularMonsterQueue(self.TEAM_LIMIT)
-        self.decending = True
+        self.team = MonsterList()
+        self.descending = True
+
+        self.name = kwargs.get('team_name', None)
 
         self.sort_key = kwargs.get('sort_key', None)
 
@@ -58,17 +61,21 @@ class MonsterTeam:
 
     def add_to_team(self, monster: MonsterBase):
         if self.team_mode == self.TeamMode.FRONT:
-            self.team.prepend(monster)
+            self.team.insert(0, monster)
         elif self.team_mode == self.TeamMode.BACK:
-            print("THIS IS WORKING")
             self.team.append(monster)
         elif self.team_mode == self.TeamMode.OPTIMISE:
-            self.team.oppend(monster, self.decending, self.sort_key)  
+            self.team.insert(0,monster)
+            self.team.sort(self.descending, self.sorting_key) 
 
     def retrieve_from_team(self) -> MonsterBase:
-        #provides monster at front of queue
-        print("FUCK")
-        return self.team.serve()
+        for i in range(len(self.team)):
+            monster = self.team[i]
+            if monster.alive():
+                self.team.delete_at_index(i)
+                return monster
+        return None
+
 
     def special(self,**kwargs) -> None:
         if self.team_mode == self.TeamMode.FRONT:
@@ -76,20 +83,18 @@ class MonsterTeam:
         elif self.team_mode == self.TeamMode.BACK:
             self.team.flip_halves()
         elif self.team_mode == self.TeamMode.OPTIMISE:
-            sorting_key = kwargs.get('SortMode', None)
-            if sorting_key == None:
+
+            if self.sorting_key == None:
                 raise ValueError("Sorting stat must be provided for Optimize team mode")
-            if type(sorting_key) != self.SortMode:
+            if type(self.sorting_key) != self.SortMode:
                 raise TypeError("sorting key must be of type SortMode")
-            self.decending = not self.decending
-            self.team.sort(self.decending, sorting_key)
+            self.descending = not self.descending
+            self.team.sort(self.descending, self.sorting_key)
 
     def regenerate_team(self) -> None:
         for i in range(len(self.team)):
-            monster = self.team.serve()
-            monster.set_hp(monster.get_max_hp())
+            self.team[i].set_hp(self.team[i].get_max_hp())
         
-
     def select_randomly(self):
         team_size = RandomGen.randint(1, self.TEAM_LIMIT)
         monsters = get_all_monsters()
@@ -287,17 +292,11 @@ class MonsterTeam:
             return Battle.Action.ATTACK
         return Battle.Action.SWAP
 
-    def death_retrieve(self, active: MonsterBase):
-        if not active.alive():
-            self.team.append(active)
-        for i in range(self.team.get_length()):
-            active = self.retrieve_from_team()
-            if active.alive(): return active
-            self.add_to_team(active)
-        return None
-
     def get_team(self):
-        return self.team.export()
+        return self.team
+    
+    def __str__(self):
+        return f"{self.name}({len(self.get_team())})"
     
 if __name__ == "__main__":
     team = MonsterTeam(

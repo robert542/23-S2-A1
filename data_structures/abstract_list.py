@@ -41,6 +41,7 @@ class List(ABC, Generic[T]):
     def append(self, item: T) -> None:
         """ Append a new item to the end of the list. """
         self.insert(len(self), item)
+        self.length +=1
 
     @abstractmethod
     def insert(self, index: int, item: T) -> None:
@@ -116,5 +117,58 @@ class MonsterList(List):
             raise LookupError("This item does not exist in this list")
         return None
     
+    def __add__(self, other_list):
+        if type(other_list) != type(self):
+            raise TypeError("You can only add a list to a list")
+        self_copy = self.array
+        for i in other_list:
+            self_copy.append(other_list[i])
+        return self_copy
+
+    def sort(self, descending:bool, sort_func):
+        #sorts in either ascending or decending order. should really only be used when adding in optimized mode to utilize incremental nature
+        values = self.array
+
+        # Bubble sort values
+        n = len(values)
+        for mark in range(n-1, 0, -1):
+            swapped = False
+            for i in range(mark):
+                if descending:
+                    if sort_func(values[i]) < sort_func(values[i + 1]):
+                        temp = values[i + 1]
+                        values[i + 1] = values[i]
+                        values[i] = temp
+                        swapped = True
+                else:
+                    if sort_func(values[i]) > sort_func(values[i + 1]):
+                        temp = values[i + 1]
+                        values[i + 1] = values[i]
+                        values[i] = temp
+                        swapped = True
+            if not swapped:
+                break
+
+    def front_swap(self, dist):
+        #dist is the difference between the front and the value being swapped
+        temp = self.array[self.front]
+        self.array[self.front] = self.array[(self.front+dist)%len(self.array)]
+        self.array[(self.front+dist)%len(self.array)] = temp
+
+    def flip_halves(self):
+        #take out of queue form
+        values = self.array
+        
+        front_len = len(values)//2
+        front_part = MonsterList(front_len)
+        back_part = MonsterList(self.length-front_len)
+        for i in range(self.length):
+            if i <= front_len-1:
+                front_part.append(values[i])
+            else:
+                back_part.insert(0,values[i])
+        self.array =  back_part + front_part
+
+                    
     def get_array(self):
         return self.array

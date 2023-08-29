@@ -74,9 +74,13 @@ class Battle:
             self.out1=self.out1.evolve()
         #if either are dead, returns next alive monster from team queue
         #returns None if no monsters in team queue are alive
-        self.out1 = self.team1.death_retrieve(self.out1)
-        self.out2 = self.team2.death_retrieve(self.out2)
-        
+        if not self.out1.alive:
+            self.team1.add_to_team(self.out1)
+            self.out1 = self.team1.retrieve_from_team()
+        if not self.out2.alive:
+            self.team2.add_to_team(self.out2)
+            self.out2 = self.team2.retrieve_from_team()
+
         #give final return based on value of out1 and out2
         if self.out1 == None or self.out2 == None:
             if self.out1 == None:
@@ -94,7 +98,6 @@ class Battle:
         self.turn_number = 0
         self.team1 = team1
         self.team2 = team2
-        print(self.team1.team.get_length())
         self.out1 = self.team1.retrieve_from_team()
         self.out2 = self.team2.retrieve_from_team()
         result = None

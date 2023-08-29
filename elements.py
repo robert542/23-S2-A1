@@ -91,14 +91,12 @@ class EffectivenessCalculator:
 
         n = int(math.sqrt(len(EffectivenessCalculator.effectiveness_values)))
 
-        index_1 = None
-        index_2 = None
         for i in range(len(EffectivenessCalculator.element_names)):
             if Element.from_string(EffectivenessCalculator.element_names[i]) == type1:
-                index_1 = i+1
+                index_attacking = i
             if Element.from_string(EffectivenessCalculator.element_names[i]) == type2:
-                index_2 = i+1  
-        return EffectivenessCalculator.effectiveness_values[(index_1*n)+(n-index_2)-1]
+                index_defending = i
+        return EffectivenessCalculator.effectiveness_values[n*index_attacking+index_defending]
 
 
     @classmethod
@@ -125,4 +123,4 @@ EffectivenessCalculator.make_singleton()
 
 
 if __name__ == "__main__":
-    print(EffectivenessCalculator.get_effectiveness(Element.FIRE, Element.WATER))
+    print(EffectivenessCalculator.get_effectiveness(Element.WATER, Element.FIRE))

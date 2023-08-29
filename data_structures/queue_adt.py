@@ -172,34 +172,35 @@ class CircularMonsterQueue(Queue[T]):
             self.array[self.front] = item
             self.length += 1
 
-    def sort(self, decending:bool, sort_func):
-        #extract the values from self.array into a length sized array for sorting
+    def sort(self, descending:bool, sort_func):
+        # Extract the values from self.array into a length-sized array for sorting
         values = ArrayR(self.length)
         for i in range(self.front, self.front + self.length):
-            values[values.element_count()-1] = self.array[i%len(self.array)]
-        
-        #bubble sort values
+            values[values.element_count()-1] = self.array[i % len(self.array)]
+
+        # Bubble sort values
         n = len(values)
-        for mark in range(n-1,0,-1):
+        for mark in range(n-1, 0, -1):
             swapped = False
             for i in range(mark):
-                if decending:
-                    if sort_func(values[i]) < sort_func(values[i+1]):
-                        temp = values[i+1]
-                        values[i+1] = values[i]
+                if descending:
+                    if sort_func(values[i]) < sort_func(values[i + 1]):
+                        temp = values[i + 1]
+                        values[i + 1] = values[i]
                         values[i] = temp
                         swapped = True
-                if not decending: 
-                    if sort_func(values[i]) > sort_func(values[i+1]):
-                        temp = values[i+1]
-                        values[i+1] = values[i]
+                else:
+                    if sort_func(values[i]) > sort_func(values[i + 1]):
+                        temp = values[i + 1]
+                        values[i + 1] = values[i]
                         values[i] = temp
                         swapped = True
-                if not swapped:
-                    break
-        #put back into self.arry
+            if not swapped:
+                break
+
+        # Put back into self.array
         for i in range(len(values)):
-            self.array[(i+self.front)%len(self.array)] = values[i]
+            self.array[(i + self.front) % len(self.array)] = values[i]
 
     def export(self):
         values = ArrayR(self.length)
@@ -366,6 +367,26 @@ class TestQueue(unittest.TestCase):
             queue.clear()
             self.assertEqual(len(queue), 0)
             self.assertTrue(queue.is_empty())
+
+    def test_prepend(self):
+        queue = CircularMonsterQueue(self.CAPACITY)
+        queue.append(1)
+        queue.append(2)
+        queue.prepend(0)
+        self.assertEqual(queue.serve(), 0)
+        self.assertEqual(queue.serve(), 1)
+        self.assertEqual(queue.serve(), 2)
+
+    def test_oppend(self):
+        queue = CircularMonsterQueue(self.CAPACITY)
+        queue.oppend(3, True, lambda x: x)
+        queue.oppend(1, True, lambda x: x)
+        queue.oppend(2, True, lambda x: x)
+        self.assertEqual(queue.serve(), 3)
+        self.assertEqual(queue.serve(), 2)
+        self.assertEqual(queue.serve(), 1)
+
+
 
 if __name__ == '__main__':
     testtorun = TestQueue()
