@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 
 from enum import auto
 from typing import Optional
@@ -77,10 +78,6 @@ class EffectivenessCalculator:
         Water is double effective to Fire, and half effective to Water and Grass [2, 0.5, 0.5]
         Grass is half effective to Fire and Grass, and double effective to Water [0.5, 2, 0.5]
         """
-        #convert element names into Element type
-        for i in range(len(element_names)):
-            element_names[i] = Element.from_string(element_names[i])
-
         EffectivenessCalculator.element_names = element_names
         EffectivenessCalculator.effectiveness_values = effectiveness_values
 
@@ -91,14 +88,17 @@ class EffectivenessCalculator:
 
         Example: EffectivenessCalculator.get_effectiveness(Element.FIRE, Element.WATER) == 0.5
         """
-        #gets the value of n for the flat n*n array stored in effective values
-        n = len(EffectivenessCalculator.element_names)
-        #checks for the "column" of the first element type
-        index_1 = EffectivenessCalculator.element_names.index(type1)
-        #checks for the "row" of the second element type
-        index_2 = EffectivenessCalculator.element_names.index(type2)
-        #grabs the value associated with the "row" and "column"
-        return EffectivenessCalculator.effectiveness_values[(index_1*n) + index_2]
+
+        n = int(math.sqrt(len(EffectivenessCalculator.effectiveness_values)))
+
+        index_1 = None
+        index_2 = None
+        for i in range(len(EffectivenessCalculator.element_names)):
+            if Element.from_string(EffectivenessCalculator.element_names[i]) == type1:
+                index_1 = i+1
+            if Element.from_string(EffectivenessCalculator.element_names[i]) == type2:
+                index_2 = i+1  
+        return EffectivenessCalculator.effectiveness_values[(index_1*n)+(n-index_2)-1]
 
 
     @classmethod

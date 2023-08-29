@@ -43,32 +43,32 @@ class MonsterTeam:
         self.team = CircularMonsterQueue(self.TEAM_LIMIT)
         self.decending = True
 
+        self.sort_key = kwargs.get('sort_key', None)
+
         self.team_mode = team_mode
         if selection_mode == self.SelectionMode.RANDOM:
-            self.select_randomly(**kwargs)
+            self.select_randomly()
         elif selection_mode == self.SelectionMode.MANUAL:
-            self.select_manually(**kwargs)
+            self.select_manually()
         elif selection_mode == self.SelectionMode.PROVIDED:
-            self.select_provided(**kwargs)
+            provided_monsters = kwargs.get('provided_monsters', None)
+            self.select_provided(provided_monsters)
         else:
             raise ValueError(f"selection_mode {selection_mode} not supported.")
 
-    def add_to_team(self, monster: MonsterBase, **kwargs):
+    def add_to_team(self, monster: MonsterBase):
         if self.team_mode == self.TeamMode.FRONT:
             self.team.prepend(monster)
         elif self.team_mode == self.TeamMode.BACK:
+            print("THIS IS WORKING")
             self.team.append(monster)
         elif self.team_mode == self.TeamMode.OPTIMISE:
-            sorting_key = kwargs.get('SortMode', None)
-            if sorting_key == None:
-                raise ValueError("Sorting stat must be provided for Optimize team mode")
-            if type(sorting_key) != self.SortMode:
-                raise TypeError("sorting key must be of type SortMode")
-            self.team.oppend(monster, self.decending, sorting_key)  
+            self.team.oppend(monster, self.decending, self.sort_key)  
 
     def retrieve_from_team(self) -> MonsterBase:
         #provides monster at front of queue
-        self.team.serve()
+        print("FUCK")
+        return self.team.serve()
 
     def special(self,**kwargs) -> None:
         if self.team_mode == self.TeamMode.FRONT:

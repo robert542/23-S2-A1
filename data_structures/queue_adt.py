@@ -148,6 +148,7 @@ class CircularMonsterQueue(Queue[T]):
         self.length += 1
         self.rear = (self.rear + 1) % len(self.array)
 
+
     def prepend(self, item: T) -> None:
         """Adds and element to the front of the queue
         lord forgive me
@@ -212,7 +213,7 @@ class CircularMonsterQueue(Queue[T]):
         
         '''
         
-        self.prependend(item)
+        self.prepend(item)
         self.sort(decending, sort_func)
 
     def front_swap(self, dist):

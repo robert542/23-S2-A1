@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
-from referential_array import ArrayR
+from data_structures.referential_array import ArrayR
 T = TypeVar('T')
 
 __author__ = 'Maria Garcia de la Banda and Brendon Taylor. Modified by Alexey Ignatiev'
@@ -73,8 +73,8 @@ class List(ABC, Generic[T]):
 class MonsterList(List):
     
     def __init__(self) -> None:
-        super().__init__(self)
-        self.array = ArrayR[0]
+        self.length = 0
+        self.array = ArrayR(0)
     
     def __getitem__(self, index: int) -> T:
         return self.array[index]
@@ -86,13 +86,14 @@ class MonsterList(List):
         if index > len(self.array) or index < 0:
             raise ValueError("To insert a value into a list you must provide an index in the range of the list")
         
-        new_array = ArrayR[len(self.array)+1]
+        new_array = ArrayR(len(self.array)+1)
         for i in range(index):
             new_array[i] = self.array[i]
         new_array[index] = item
         for i in range(index+1, len(self.array)+1):
             new_array[i] = self.array[i]
         self.array = new_array
+        self.length +=1
 
     def delete_at_index(self, index: int) -> T:
         if index > len(self.array) or index < 0:
@@ -104,6 +105,7 @@ class MonsterList(List):
         for i in range(index,len(self.array)-1):
             new_array[i] = self.array[i+1]
         self.array = new_array
+        self.length-=1
 
     def index(self, item: T, strict: bool=False) -> int:
         #will return the index of item if found in list, if not found, None will be returned unless strcit is set to True

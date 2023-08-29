@@ -31,8 +31,8 @@ class Battle:
         * return the battle result if completed.
         """
         #Get action from each team
-        t1_action = self.team1.choose_action(self.out1, self.team2)
-        t2_action = self.team2.choose_action(self.out1, self.team2)
+        t1_action = self.team1.choose_action(self.out1, self.out2)
+        t2_action = self.team2.choose_action(self.out2, self.out1)
         
         #execute special move or swap for team 1
         if t1_action == Battle.Action.SPECIAL:
@@ -94,8 +94,9 @@ class Battle:
         self.turn_number = 0
         self.team1 = team1
         self.team2 = team2
-        self.out1 = team1.retrieve_from_team()
-        self.out2 = team2.retrieve_from_team()
+        print(self.team1.team.get_length())
+        self.out1 = self.team1.retrieve_from_team()
+        self.out2 = self.team2.retrieve_from_team()
         result = None
         while result is None:
             result = self.process_turn()

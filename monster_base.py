@@ -2,7 +2,7 @@ from __future__ import annotations
 import abc
 
 from stats import Stats
-from elements import EffectivenessCalculator
+from elements import EffectivenessCalculator, Element
 
 class MonsterBase(abc.ABC):
 
@@ -16,9 +16,9 @@ class MonsterBase(abc.ABC):
         self._level = level
         self.leveled_up = False
         if simple_mode:
-            self.stats = self.get_simple_stats
+            self.stats = self.get_simple_stats()
         else:
-            self.stats = self.get_complex_stats
+            self.stats = self.get_complex_stats()
         
         self.hp = self.stats.get_max_hp()
 
@@ -57,7 +57,7 @@ class MonsterBase(abc.ABC):
 
     def get_defense(self):
         """Get the defense of this monster instance"""
-        return self.get_defense()
+        return self.stats.get_defense()
 
     def get_speed(self):
         """Get the speed of this monster instance"""
@@ -90,13 +90,14 @@ class MonsterBase(abc.ABC):
             else:
                 damage = attack / 4
         
-        #step 2
-        elemental_multiplier = EffectivenessCalculator.get_effectiveness(self.get_element, other.get_element)
-        effective_damage = damage*elemental_multiplier
+            #step 2
+            elemental_multiplier = EffectivenessCalculator.get_effectiveness(Element.from_string(self.get_element()), Element.from_string(other.get_element()))
+            effective_damage = damage*elemental_multiplier
 
-        final_damage = int(effective_damage)+1
+            final_damage = int(effective_damage)+1
 
-        other.remove_health(final_damage)
+            other.remove_health(final_damage)
+        
 
 
     def remove_health(self, amount):
